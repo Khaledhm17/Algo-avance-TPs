@@ -1,0 +1,132 @@
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+#define N 1000
+
+// Calculate execution time in milliseconds
+double calculateTime(clock_t start, clock_t end) {
+    return (double)(end - start) * 1000.0 / CLOCKS_PER_SEC;
+}
+
+// Binary Search Recursive
+int binaryRecursive(int A[], int left, int right,
+                    int x, int *comparisons) {
+    if (left > right)
+        return -1;
+
+    int mid = left + (right - left) / 2;
+
+    (*comparisons)++;
+    if (A[mid] == x)
+        return mid;
+
+    (*comparisons)++;
+    if (A[mid] < x)
+        return binaryRecursive(A, mid + 1, right, x, comparisons);
+
+    return binaryRecursive(A, left, mid - 1, x, comparisons);
+}
+
+int main() {
+    int A[N];
+    int i, j, x, temp;
+
+    srand(time(NULL));
+
+    // 1. Generate random numbers
+    for (i = 0; i < N; i++)
+        A[i] = rand() % 10000;
+
+    // 2. Sort using Bubble Sort
+    for (i = 0; i < N - 1; i++) {
+        for (j = 0; j < N - i - 1; j++) {
+            if (A[j] > A[j + 1]) {
+                temp = A[j];
+                A[j] = A[j + 1];
+                A[j + 1] = temp;
+            }
+        }
+    }
+
+    // 3. Choose x from the array
+    x = A[rand() % N];
+    printf("Number to search: %d\n", x);
+
+    // 4. Linear Search
+    int linearPosition = -1;
+    int linearComparisons = 0;
+
+    clock_t startLinear = clock();
+
+    for (i = 0; i < N; i++) {
+        linearComparisons++;
+
+        if (A[i] == x) {
+            linearPosition = i;
+            break;
+        }
+    }
+
+    clock_t endLinear = clock();
+    double linearTime = calculateTime(startLinear, endLinear);
+
+    // 5. Binary Search Iterative
+    int left = 0, right = N - 1;
+    int binaryPosition = -1;
+    int binaryComparisons = 0;
+
+    clock_t startBinary = clock();
+
+    while (left <= right) {
+        int mid = left + (right - left) / 2;
+
+        binaryComparisons++;
+        if (A[mid] == x) {
+            binaryPosition = mid;
+            break;
+        }
+
+        binaryComparisons++;
+        if (A[mid] < x)
+            left = mid + 1;
+        else
+            right = mid - 1;
+    }
+
+    clock_t endBinary = clock();
+    double binaryTime = calculateTime(startBinary, endBinary);
+
+    // 6. Binary Search Recursive
+    int recursiveComparisons = 0;
+
+    clock_t startRecursive = clock();
+
+    int recursivePosition = binaryRecursive(
+        A, 0, N - 1, x, &recursiveComparisons
+    );
+
+    clock_t endRecursive = clock();
+    double recursiveTime = calculateTime(
+        startRecursive, endRecursive
+    );
+
+    // 7. Display results
+    printf("\n--- Linear Search ---\n");
+    printf("Position: %d\n", linearPosition);
+    printf("Comparisons: %d\n", linearComparisons);
+    printf("Time: %.6f ms\n", linearTime);
+
+    printf("\n--- Binary Search Iterative ---\n");
+    printf("Position: %d\n", binaryPosition);
+    printf("Comparisons: %d\n", binaryComparisons);
+    printf("Time: %.6f ms\n", binaryTime);
+
+    printf("\n--- Binary Search Recursive ---\n");
+    printf("Position: %d\n", recursivePosition);
+    printf("Comparisons: %d\n", recursiveComparisons);
+    printf("Time: %.6f ms\n", recursiveTime);
+
+    return 0;
+}
